@@ -33,6 +33,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.compose.rememberImagePainter
+import android.content.Context
+import android.content.SharedPreferences
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,30 +61,18 @@ fun FrutList() {
     var frutDescription by remember { mutableStateOf("") }
     var frutImage by remember { mutableStateOf("") }
 
-    val fruts = remember { mutableStateListOf<Frut>(
-        Frut("Manzana", "Fruta roja y deliciosa", "https://th.bing.com/th/id/R.8f5ff2e8c8efcf2e4e4730b39b91951d?rik=lI9W7xRnC8SDYg&riu=http%3a%2f%2fupload.wikimedia.org%2fwikipedia%2fcommons%2f1%2f15%2fRed_Apple.jpg&ehk=yc0sOMMcFxEbzUr6B6KnEj%2bAyx0nLaVXHkJ9iN73cUw%3d&risl=&pid=ImgRaw&r=0"),
-        Frut("Banana", "Fruta amarilla y deliciosa", "https://th.bing.com/th/id/OIP.DzzBtp9wRuY1VocmOurZ7gHaJE?rs=1&pid=ImgDetMain"),
-        Frut("Pera", "Fruta verde y jugosa", "https://th.bing.com/th/id/OIP.I3lWiCMDjz_tnMqhLxG85QHaIZ?rs=1&pid=ImgDetMain"),
-        Frut("Naranja", "Fruta cítrica y jugosa", "https://th.bing.com/th/id/OIP.0-DQgL51QOZvBgFGsaJ5-AHaEA?rs=1&pid=ImgDetMain"),
-        Frut("Uva", "Fruta morada y dulce", "https://th.bing.com/th/id/OIP.SfoYCSkwGW4RPKNRARGW-gAAAA?rs=1&pid=ImgDetMain"),
-        Frut("Fresa", "Fruta roja y jugosa", "https://th.bing.com/th/id/R.0f3d2d5bf998fd5a6c8684c04995761f?rik=oPoTyhTEogEuMA&riu=http%3a%2f%2flaguiadelasvitaminas.com%2fwp-content%2fuploads%2f2014%2f08%2ffresas.jpg&ehk=XntkY5xewOPm5li95W%2fcUzNakrfNBm1sC1g22Fvw4Dg%3d&risl=&pid=ImgRaw&r=0"),
-        Frut("Kiwi", "Fruta verde y jugosa", "https://cdn.britannica.com/45/126445-050-4C0FA9F6/Kiwi-fruit.jpg"),
-        Frut("Mango", "Fruta naranja y jugosa", "https://th.bing.com/th/id/R.f09b0f9c3c7aee1f4f770629d1be2726?rik=oW%2bHo8mkTPQsoA&pid=ImgRaw&r=0"),
-        Frut("Piña", "Fruta amarilla y jugosa", "https://th.bing.com/th/id/OIP.91twXM305jgUp_5Vde35PgHaFL?rs=1&pid=ImgDetMain"),
-        Frut("Sandía", "Fruta roja y jugosa", "https://th.bing.com/th/id/OIP.QF4WITnd-5FATIX73HocnwHaHa?rs=1&pid=ImgDetMain"),
-        Frut("Melón", "Fruta amarilla y jugosa", "https://th.bing.com/th/id/OIP.PRQupjakK7fyV8U_8jZ8_gHaHa?rs=1&pid=ImgDetMain"),
-        Frut("Cereza", "Fruta roja y dulce", "https://th.bing.com/th/id/OIP.ulM5yj0H5mXNjs-HUkwR8AHaHe?rs=1&pid=ImgDetMain"),
-        Frut("Durazno", "Fruta naranja y jugosa", "https://th.bing.com/th/id/R.176871874a02513876a75cd3ecbf1297?rik=hTOW01OH%2be5J7A&riu=http%3a%2f%2f1.bp.blogspot.com%2f-dc_GvMXfiuY%2fVOGPKlJ9dFI%2fAAAAAAAABp4%2fSisQ8pRmehE%2fs1600%2fdurazno-01.jpg&ehk=fBADsgOBc6ghaDT%2frm4esGk%2bplaN6oZRawXWqeISjuw%3d&risl=&pid=ImgRaw&r=0"),
-        Frut("Mora", "Fruta morada y dulce", "https://th.bing.com/th/id/OIP.l_yTodctSEFy_5b68yg__gHaGc?rs=1&pid=ImgDetMain"),
-    ) }
-
     val context = LocalContext.current
+
+    // Cargar las frutas desde SharedPreferences al iniciar la app
+    val fruts = remember {
+        mutableStateListOf(*loadFruts(context).toTypedArray())  // Cargamos las frutas guardadas
+    }
 
     var showModal by remember { mutableStateOf(false) }
     var selectedFrut by remember { mutableStateOf<Frut?>(null) }
 
     Column(modifier = Modifier.padding(16.dp)) {
-        // Campo de texto para el nombre de la fruta
+        // Campos para agregar una nueva fruta
         TextField(
             value = frutName,
             label = { Text(text = "Nombre:") },
@@ -88,7 +80,6 @@ fun FrutList() {
             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
         )
 
-        // Campo de texto para la descripción de la fruta
         TextField(
             value = frutDescription,
             label = { Text(text = "Descripción:") },
@@ -96,7 +87,6 @@ fun FrutList() {
             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
         )
 
-        // Campo de texto para la URL de la imagen
         TextField(
             value = frutImage,
             label = { Text(text = "Image URL:") },
@@ -104,11 +94,12 @@ fun FrutList() {
             modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
         )
 
-        // Botón para agregar la fruta
+        // Botón para agregar una fruta
         Button(onClick = {
             if (frutName.isNotEmpty() && frutDescription.isNotEmpty() && frutImage.isNotEmpty()) {
                 val newFrut = Frut(frutName, frutDescription, frutImage)
                 fruts.add(newFrut)
+                saveFruts(context, fruts)  // Guardamos la lista actualizada
                 frutName = ""
                 frutDescription = ""
                 frutImage = ""
@@ -125,8 +116,8 @@ fun FrutList() {
                     modifier = Modifier
                         .padding(5.dp)
                         .clickable {
-                            selectedFrut = frut // Asignamos la fruta seleccionada
-                            showModal = true  // Mostramos el modal
+                            selectedFrut = frut
+                            showModal = true
                         }
                 ) {
                     Column(Modifier.padding(5.dp)) {
@@ -135,8 +126,8 @@ fun FrutList() {
                                 model = frut.image,
                                 contentDescription = "Imagen de ${frut.nombre}",
                                 modifier = Modifier.size(100.dp),
-                                placeholder = rememberImagePainter("https://via.placeholder.com/150"), // Placeholder por defecto
-                                error = rememberImagePainter("https://via.placeholder.com/150/ff0000/ffffff?text=Error") // Placeholder de error
+                                placeholder = rememberImagePainter("https://via.placeholder.com/150"),
+                                error = rememberImagePainter("https://via.placeholder.com/150/ff0000/ffffff?text=Error")
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Column(modifier = Modifier.fillMaxWidth()) {
@@ -153,7 +144,7 @@ fun FrutList() {
     // Modal con detalles de la fruta seleccionada
     if (showModal && selectedFrut != null) {
         AlertDialog(
-            onDismissRequest = { showModal = false },  // Cerrar el modal
+            onDismissRequest = { showModal = false },
             title = { Text(text = "Detalles de la Fruta") },
             text = {
                 selectedFrut?.let { frut ->
@@ -161,11 +152,9 @@ fun FrutList() {
                         AsyncImage(
                             model = frut.image,
                             contentDescription = "Imagen de ${frut.nombre}",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(150.dp),
-                            placeholder = rememberImagePainter("https://via.placeholder.com/150"),  // Placeholder por defecto
-                            error = rememberImagePainter("https://via.placeholder.com/150/ff0000/ffffff?text=Error") // Placeholder de error
+                            modifier = Modifier.fillMaxWidth().height(150.dp),
+                            placeholder = rememberImagePainter("https://via.placeholder.com/150"),
+                            error = rememberImagePainter("https://via.placeholder.com/150/ff0000/ffffff?text=Error")
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(text = "Nombre: ${frut.nombre}", style = MaterialTheme.typography.titleMedium)
@@ -181,4 +170,29 @@ fun FrutList() {
         )
     }
 }
+
+
+// Función para guardar las frutas en SharedPreferences
+fun saveFruts(context: Context, fruts: List<Frut>) {
+    val sharedPreferences: SharedPreferences = context.getSharedPreferences("fruts_prefs", Context.MODE_PRIVATE)
+    val editor = sharedPreferences.edit()
+    val gson = Gson()
+    val json = gson.toJson(fruts)  // Convertimos la lista a JSON
+    editor.putString("fruts_list", json)
+    editor.apply()  // Guardamos los datos
+}
+
+// Función para cargar las frutas desde SharedPreferences
+fun loadFruts(context: Context): List<Frut> {
+    val sharedPreferences: SharedPreferences = context.getSharedPreferences("fruts_prefs", Context.MODE_PRIVATE)
+    val gson = Gson()
+    val json = sharedPreferences.getString("fruts_list", null)
+    val type = object : TypeToken<List<Frut>>() {}.type
+    return if (json != null) {
+        gson.fromJson(json, type)  // Convertimos el JSON de vuelta a lista
+    } else {
+        emptyList()  // Si no hay datos, retornamos una lista vacía
+    }
+}
+
 
