@@ -35,6 +35,7 @@ import coil.compose.AsyncImage
 import coil.compose.rememberImagePainter
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.compose.runtime.LaunchedEffect
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
@@ -60,8 +61,28 @@ fun FrutList() {
     var frutName by remember { mutableStateOf("") }
     var frutDescription by remember { mutableStateOf("") }
     var frutImage by remember { mutableStateOf("") }
-
     val context = LocalContext.current
+    val firstListFruts = mutableStateListOf<Frut>(
+        Frut("Manzana", "Fruta roja y deliciosa", "https://th.bing.com/th/id/R.8f5ff2e8c8efcf2e4e4730b39b91951d?rik=lI9W7xRnC8SDYg&riu=http%3a%2f%2fupload.wikimedia.org%2fwikipedia%2fcommons%2f1%2f15%2fRed_Apple.jpg&ehk=yc0sOMMcFxEbzUr6B6KnEj%2bAyx0nLaVXHkJ9iN73cUw%3d&risl=&pid=ImgRaw&r=0"),
+        Frut("Banana", "Fruta amarilla y deliciosa", "https://th.bing.com/th/id/OIP.DzzBtp9wRuY1VocmOurZ7gHaJE?rs=1&pid=ImgDetMain"),
+        Frut("Pera", "Fruta verde y jugosa", "https://th.bing.com/th/id/OIP.I3lWiCMDjz_tnMqhLxG85QHaIZ?rs=1&pid=ImgDetMain"),
+        Frut("Naranja", "Fruta cítrica y jugosa", "https://th.bing.com/th/id/OIP.0-DQgL51QOZvBgFGsaJ5-AHaEA?rs=1&pid=ImgDetMain"),
+        Frut("Uva", "Fruta morada y dulce", "https://th.bing.com/th/id/OIP.SfoYCSkwGW4RPKNRARGW-gAAAA?rs=1&pid=ImgDetMain"),
+        Frut("Fresa", "Fruta roja y jugosa", "https://th.bing.com/th/id/R.0f3d2d5bf998fd5a6c8684c04995761f?rik=oPoTyhTEogEuMA&riu=http%3a%2f%2flaguiadelasvitaminas.com%2fwp-content%2fuploads%2f2014%2f08%2ffresas.jpg&ehk=XntkY5xewOPm5li95W%2fcUzNakrfNBm1sC1g22Fvw4Dg%3d&risl=&pid=ImgRaw&r=0"),
+        Frut("Kiwi", "Fruta verde y jugosa", "https://cdn.britannica.com/45/126445-050-4C0FA9F6/Kiwi-fruit.jpg"),
+        Frut("Mango", "Fruta naranja y jugosa", "https://th.bing.com/th/id/R.f09b0f9c3c7aee1f4f770629d1be2726?rik=oW%2bHo8mkTPQsoA&pid=ImgRaw&r=0"),
+        Frut("Piña", "Fruta amarilla y jugosa", "https://th.bing.com/th/id/OIP.91twXM305jgUp_5Vde35PgHaFL?rs=1&pid=ImgDetMain"),
+        Frut("Sandía", "Fruta roja y jugosa", "https://th.bing.com/th/id/OIP.QF4WITnd-5FATIX73HocnwHaHa?rs=1&pid=ImgDetMain"),
+        Frut("Melón", "Fruta amarilla y jugosa", "https://th.bing.com/th/id/OIP.PRQupjakK7fyV8U_8jZ8_gHaHa?rs=1&pid=ImgDetMain"),
+        Frut("Cereza", "Fruta roja y dulce", "https://th.bing.com/th/id/OIP.ulM5yj0H5mXNjs-HUkwR8AHaHe?rs=1&pid=ImgDetMain"),
+        Frut("Durazno", "Fruta naranja y jugosa", "https://th.bing.com/th/id/R.176871874a02513876a75cd3ecbf1297?rik=hTOW01OH%2be5J7A&riu=http%3a%2f%2f1.bp.blogspot.com%2f-dc_GvMXfiuY%2fVOGPKlJ9dFI%2fAAAAAAAABp4%2fSisQ8pRmehE%2fs1600%2fdurazno-01.jpg&ehk=fBADsgOBc6ghaDT%2frm4esGk%2bplaN6oZRawXWqeISjuw%3d&risl=&pid=ImgRaw&r=0"),
+        Frut("Mora", "Fruta morada y dulce", "https://th.bing.com/th/id/OIP.l_yTodctSEFy_5b68yg__gHaGc?rs=1&pid=ImgDetMain"),
+    )
+/*
+    // Guardar la lista de frutas en SharedPreferences Precarga de datos de ejemplo
+    LaunchedEffect(firstListFruts) {
+        saveFruts(context, firstListFruts)  // Guardamos la lista de frutas en memoria persistente
+    }*/
 
     // Cargar las frutas desde SharedPreferences al iniciar la app
     val fruts = remember {
